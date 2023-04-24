@@ -172,7 +172,7 @@ function createDiagram() {
 
       console.log(response);
       const data = await response.json();
-      const diagram = data.choices[0].text;
+      const diagram = data.choices[0].text.trim('\n');
       set(diagram);
     },
 		reset: () => set(null)
