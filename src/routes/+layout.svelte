@@ -1,10 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import TailwindCss from '$lib/TailwindCss.svelte';
-  import DiagramEditor from '$lib/DiagramEditor.svelte';
-
-
-
+  import TailwindCss from '$lib/components/TailwindCss.svelte';
+  import DiagramEditor from '$lib/components/DiagramEditor.svelte';
 </script>
 
 <TailwindCss />
