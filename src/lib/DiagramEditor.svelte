@@ -1,6 +1,11 @@
 <script lang="ts">
-	import mermaid from 'mermaid';
 	import { onMount } from 'svelte';
+  import * as monaco from 'monaco-editor';
+  import monacoJsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+  import monacoEditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+  // @ts-ignore ignore missing type definitions for monaco-mermaid
+  import initEditor from 'monaco-mermaid';
+  import mermaid from 'mermaid';
 
 	let graph: HTMLPreElement | null = null;
 	let diagramCode = `erDiagram
@@ -17,6 +22,16 @@
       int age
   }
 `;
+  let divEl: HTMLDivElement | undefined = undefined;
+  let editor: monaco.editor.IStandaloneCodeEditor | undefined;
+  let editorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+    minimap: {
+      enabled: false,
+    },
+    value: diagramCode,
+    theme: 'mermaid-dark',
+    overviewRulerLanes: 0,
+  };
 
 	async function refreshGraph() {
     if (graph == null) return;
@@ -25,13 +40,52 @@
     graph.removeAttribute('data-processed');
 
 		await mermaid.run({
-      nodes: [ graph ]
+      nodes: [ graph ],
+      suppressErrors: true,
     });
 	}
 
 	onMount(async () => {
+    self.MonacoEnvironment = {
+      getWorker(_, label) {
+        if (label === 'json')
+          return new monacoJsonWorker();
+
+        return new monacoEditorWorker();
+      }
+    };
+
 		mermaid.initialize({});
 		await refreshGraph();
+    
+    if (!divEl)
+      throw new Error('divEl is undefined');
+
+    initEditor(monaco);
+    editor = monaco.editor.create(divEl, editorOptions);
+    
+    editor.onDidChangeModelContent(({ isFlush, changes }) => {
+      const newText = editor?.getValue();
+
+      if (!newText || diagramCode === newText || isFlush)
+        return;
+
+      diagramCode = newText;
+		  refreshGraph();
+    });
+
+    editor.addAction({
+      id: 'mermaid-render-diagram',
+      label: 'Render Diagram',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+
+      run: function () {
+		    refreshGraph();
+      }
+    });
+
+    // Setup syntax highlighting
+    monaco.editor.setModelLanguage(editor.getModel()!, 'mermaid');
 	});
 </script>
 
@@ -41,10 +95,10 @@
 			<p>Loading...</p>
 		{:else}
 			<label for="graphCode" class="text-xl">Graph Code</label>
-			<textarea id="graphCode" class="flex-1 rounded-lg" bind:value={diagramCode} on:input={refreshGraph} />
+      <div bind:this={divEl} id="editor" class="overflow-hidden h-full" />
 		{/if}
 	</div>
-	<div class="flex-col flex-1 p-4 gap-2">
+	<div class="flex-col flex-1 p-4 gap-2 overflow-hidden">
 		<pre bind:this={graph} class="mermaid" />
 	</div>
 </div>
