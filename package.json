@@ -39,6 +39,8 @@
 		"vitest": "^0.25.3"
 	},
 	"dependencies": {
+		"html-to-image": "^1.11.11",
+		"js-base64": "^3.7.5",
 		"mermaid": "^10.1.0",
 		"monaco-editor": "^0.37.1",
 		"monaco-mermaid": "^1.0.8"
