@@ -1,6 +1,6 @@
 # MermaidGPT
 
-Generates mermaid Entity Relationship Diagrams with GPT-3, based on your description
+Generates [mermaid](https://mermaid.js.org/) Entity Relationship Diagrams with GPT-3, based on your description
 
 Head over to [MermaidGPT](https://luttje.github.io/mermaid-gpt/), enter your [OpenAI API key](https://platform.openai.com/account/api-keys) and start generating diagrams. 
 
