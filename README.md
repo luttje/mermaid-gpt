@@ -4,7 +4,7 @@ Generates mermaid Entity Relationship Diagrams with GPT-3, based on your descrip
 
 Head over to [MermaidGPT](https://luttje.github.io/mermaid-gpt/), enter your [OpenAI API key](https://platform.openai.com/account/api-keys) and start generating diagrams. 
 
-> **Note** Your API key is only stored in your browser's LocalStorage. It is not sent anywhere. Nevertheless, you should be careful entering your API key anywhere on the internet. It is recommended you get this project running locally and use it from there.
+> **Note** Your API key is only stored in your browser's LocalStorage. It is not sent anywhere. Nevertheless, you should be careful entering your API key anywhere. It is recommended you understand the source code and then get this project running locally to use it from there.
 
 ## Getting started
 
