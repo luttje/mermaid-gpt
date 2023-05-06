@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { base } from "$app/paths";
   import ProjectEditor from '$lib/components/ProjectEditor.svelte';
+  import DiagramEditor from '$lib/components/DiagramEditor.svelte';
 </script>
 
 <ProjectEditor />
+<DiagramEditor />

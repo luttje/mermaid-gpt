@@ -4,10 +4,9 @@
   import monacoJsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
   import monacoEditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import { toPng, toJpeg, toSvg } from 'html-to-image';
-	import { diagram } from '$lib/stores/diagram';
+	import { diagram } from '$lib/stores/diagram-store';
   // @ts-ignore ignore missing type definitions for monaco-mermaid
   import initEditor from 'monaco-mermaid';
-  import { Base64 } from 'js-base64'
   import mermaid from 'mermaid';
 
 	let graph: HTMLPreElement | null = null;
@@ -130,19 +129,21 @@
 	});
 </script>
 
-<div class="flex flex-row grow">
+<div class="flex flex-col md:flex-row md:grow">
 	<div class="flex flex-col flex-1 bg-slate-200 p-4 gap-2">
 		{#if graph == null}
 			<p>Loading...</p>
 		{:else}
 			<label for="graphCode" class="text-xl">Graph Code</label>
-      <div bind:this={divEl} id="editor" class="overflow-hidden h-full" />
+      <div bind:this={divEl} id="editor" class="h-full w-full min-h-[250px]" />
 		{/if}
 	</div>
-	<div class="flex-col flex-1 p-4 gap-2 overflow-hidden relative">
-    <label for="graph" class="text-xl">Resulting Graph</label>
-		<pre bind:this={graph} id="graph" class="mermaid" />
-    <div class="absolute right-5 bottom-5">
+	<div class="flex flex-col flex-1 p-4 gap-2">
+    <div class="flex-1 grow">
+      <label for="graph" class="text-xl">Resulting Graph</label>
+      <pre bind:this={graph} id="graph" class="mermaid" />
+    </div>
+    <div class="text-right bg-white shrink-0">
       <div class="relative inline-flex text-left">
         <button type="button" class="flex items-center justify-center px-4 py-2 font-medium text-white !bg-blue-500 border border-transparent rounded-l-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" on:click={(event) => saveGraph('svg')}>
           Save as SVG
@@ -167,9 +168,8 @@
       <h2>Download Diagram</h2>
       <p>Your diagram has been generated. Click the button below to download it.</p>
       <div class="flex flex-row justify-between">
-        <!-- Cancel button left -->
-        <a class="rounded-lg p-2 bg-gray-300 cursor-pointer" on:click={() => downloadDialogEl?.close()}>Cancel</a>
-        <a class="rounded-lg p-2 bg-blue-500 text-white cursor-pointer" bind:this={downloadEl} on:click={() => downloadDialogEl?.close()}>Download</a>
+        <a href={'#'} class="rounded-lg p-2 bg-gray-300 cursor-pointer" on:click={() => downloadDialogEl?.close()}>Cancel</a>
+        <a href={'#'} class="rounded-lg p-2 bg-blue-500 text-white cursor-pointer" bind:this={downloadEl} on:click={() => downloadDialogEl?.close()}>Download</a>
       </div>
   </dialog>
 </div>

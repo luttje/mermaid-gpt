@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { diagram } from '$lib/stores/diagram';
+	import { type DiagramPrompt, diagramPrompts } from '$lib/diagram-prompts';
+	import { diagram } from '$lib/stores/diagram-store';
   import { onMount } from 'svelte';
 
   let apiKeyElType: string = 'password';
   let apiKey: string | undefined = undefined;
-  let projectDescription: string = "A car sharing app where persons can be the driver of many cars. But both a car and a person can exist without the other. A person has human attributes. A car has car attributes.";
+  let hasCustomizedProjectDescription: boolean = false;
+  let selectedDiagram: DiagramPrompt = diagramPrompts[0];
+  let projectDescription: string = selectedDiagram.example;
   let isGeneratingDiagram = false;
 
   function checkApiKey(apiKey: string | undefined): apiKey is string {
@@ -43,21 +46,30 @@
     
     isGeneratingDiagram = true;
 
-    const generatedDiagram = await (diagram.generateDiagram(apiKey, projectDescription));
-    
+    const generatedDiagram = await (selectedDiagram.generateDiagram(apiKey, projectDescription));
+    diagram.set(generatedDiagram);
+
     isGeneratingDiagram = false;
   }
 
   onMount(() => {
     apiKey = localStorage.getItem('apiKey') || '';
+    
   });
+  
+  function updateProjectDescription() {
+    if(hasCustomizedProjectDescription)
+      return;
+
+    projectDescription = selectedDiagram.example;
+  }
 </script>
 
 <div class="flex flex-col grow-0 bg-slate-400 shadow p-4 gap-4">
   <div class="flex flex-col gap-2 grow">
-    <label for="apiKey" class="text-xl">OpenAI API Key:</label>
+    <label for="apiKey" class="">OpenAI API Key:</label>
     <div class="flex flex-row gap-2">
-      <input type={ apiKeyElType } value={apiKey} id="apiKey" class="grow rounded-lg p-2" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" on:input={(e) => updateApiKey(e)} />
+      <input type={ apiKeyElType } value={ apiKey } id="apiKey" class="grow rounded-lg p-2" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" on:input={(e) => updateApiKey(e)} />
       <button class="flex flex-col justify-center items-center bg-slate-200 rounded-lg p-2" on:click={() => apiKeyElType = apiKeyElType === 'password' ? 'text' : 'password'}>
         <svg fill="#000000" class="w-4 h-4" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <path d="M0 16q0.064 0.128 0.16 0.352t0.48 0.928 0.832 1.344 1.248 1.536 1.664 1.696 2.144 1.568 2.624 1.344 3.136 0.896 3.712 0.352 3.712-0.352 3.168-0.928 2.592-1.312 2.144-1.6 1.664-1.632 1.248-1.6 0.832-1.312 0.48-0.928l0.16-0.352q-0.032-0.128-0.16-0.352t-0.48-0.896-0.832-1.344-1.248-1.568-1.664-1.664-2.144-1.568-2.624-1.344-3.136-0.896-3.712-0.352-3.712 0.352-3.168 0.896-2.592 1.344-2.144 1.568-1.664 1.664-1.248 1.568-0.832 1.344-0.48 0.928zM10.016 16q0-2.464 1.728-4.224t4.256-1.76 4.256 1.76 1.76 4.224-1.76 4.256-4.256 1.76-4.256-1.76-1.728-4.256zM12 16q0 1.664 1.184 2.848t2.816 1.152 2.816-1.152 1.184-2.848-1.184-2.816-2.816-1.184-2.816 1.184l2.816 2.816h-4z"></path>
@@ -66,10 +78,24 @@
     </div>
   </div>
   <div class="flex flex-col gap-2 grow">
-    <label for="projectDescription" class="text-xl">Describe the entities in your application and how they relate:</label>
-    <textarea id="projectDescription" class="flex-1 rounded-lg p-2" bind:value={projectDescription} placeholder="A description of the project" />
+    <label for="diagramPrompt" class="">Diagram Type:</label>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      {#each diagramPrompts as prompt}
+        <label class="flex flex-row items-center gap-2">
+          <input type="radio" name="diagramPrompt" value={prompt} bind:group={selectedDiagram} on:change={updateProjectDescription} />
+          <span class="flex flex-row items-center align-middle text-xl gap-2">
+            {prompt.diagramType}
+            <a class="text-slate-200 underline text-sm" href="{ prompt.promptSourceUrl }" target="_blank" title="View Prompt Source Code">(?)</a>
+          </span>
+        </label>
+      {/each}
+    </div>
   </div>
-  <div class="flex flex-col items-stretch">
+  <div class="flex flex-col gap-2 grow">
+    <label for="projectDescription" class="">{selectedDiagram.instruction} <button class="text-slate-200 underline" on:click={() => { projectDescription = selectedDiagram.example; hasCustomizedProjectDescription = false; }}>(Show an Example)</button></label>
+    <textarea id="projectDescription" class="flex-1 rounded-lg p-2" bind:value={projectDescription} placeholder="A description of the project" on:input={() => hasCustomizedProjectDescription = true} />
+  </div>
+  <div class="flex flex-col items-stretch gap-2">
     {#if isGeneratingDiagram}
       <span class="self-center">
         <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -81,5 +107,6 @@
           Generate Diagram <span class="italic">Using GPT3</span>
       </button>
     {/if}
+    <p class="text-sm italic">Sometimes Graph Code with an invalid syntax may be generated. If that happens you can try generating again or manually correct the mistake in the graph code.</p>
   </div>
 </div>
