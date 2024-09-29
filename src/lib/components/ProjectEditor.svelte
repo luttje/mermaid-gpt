@@ -5,17 +5,62 @@
 
   let apiKeyElType: string = 'password';
   let apiKey: string | undefined = undefined;
+  let model: string = '';
   let hasCustomizedProjectDescription: boolean = false;
   let selectedDiagram: DiagramPrompt = diagramPrompts[0];
   let projectDescription: string = selectedDiagram.example;
   let isGeneratingDiagram = false;
+  let availableModels: string[] = [];
+
+  const preferredModels = ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'];
+
+  function loadAvailableModels() {
+    fetch('https://api.openai.com/v1/models', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      const models = data.data;
+      const modelIds = [];
+
+      for (const model of models) {
+        modelIds.push(model.id);
+      }
+
+      availableModels = modelIds.sort();
+      
+      for (const preferredModel of preferredModels) {
+        if (availableModels.includes(preferredModel)) {
+          model = preferredModel;
+          break;
+        }
+      }
+    })
+  }
+
+  function setEnabledApiKeyElements(enabled: boolean) {
+    const elements = document.querySelectorAll('.api-key-required');
+    elements.forEach((element) => {
+      if (enabled) {
+        element.classList.remove('pointer-events-none', 'opacity-50');
+      } else {
+        element.classList.add('pointer-events-none', 'opacity-50');
+      }
+    });
+  }
 
   function checkApiKey(apiKey: string | undefined): apiKey is string {
     if (!apiKey || apiKey.length === 0) {
       alert('Please enter an API key');
+      setEnabledApiKeyElements(false);
       return false;
     }
 
+    setEnabledApiKeyElements(true);
     return true;
   }
 
@@ -46,7 +91,7 @@
     
     isGeneratingDiagram = true;
 
-    const generatedDiagram = await (selectedDiagram.generateDiagram(apiKey, projectDescription));
+    const generatedDiagram = await (selectedDiagram.generateDiagram(apiKey, model, projectDescription));
     diagram.set(generatedDiagram);
 
     isGeneratingDiagram = false;
@@ -55,6 +100,12 @@
   onMount(() => {
     apiKey = localStorage.getItem('apiKey') || '';
     
+    setEnabledApiKeyElements(false);
+
+    if (apiKey !== '') {
+      setEnabledApiKeyElements(true);
+      loadAvailableModels();
+    }
   });
   
   function updateProjectDescription() {
@@ -77,36 +128,51 @@
       </button>
     </div>
   </div>
-  <div class="flex flex-col gap-2 grow">
-    <label for="diagramPrompt" class="">Diagram Type:</label>
-    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-      {#each diagramPrompts as prompt}
-        <label class="flex flex-row items-center gap-2">
-          <input type="radio" name="diagramPrompt" value={prompt} bind:group={selectedDiagram} on:change={updateProjectDescription} />
-          <span class="flex flex-row items-center align-middle text-xl gap-2">
-            {prompt.diagramType}
-            <a class="text-slate-200 underline text-sm" href="{ prompt.promptSourceUrl }" target="_blank" title="View Prompt Source Code">(?)</a>
-          </span>
-        </label>
-      {/each}
+  <div class="flex flex-col gap-2 api-key-required">
+    <div class="flex flex-col gap-2">
+      <label for="model" class="">Model:</label>
+      <div class="flex flex-row gap-2">
+        <select id="model" class="rounded-lg p-2 flex-grow" bind:value={model}>
+          {#each availableModels as model}
+            <option value={model}>{model}</option>
+          {/each}
+        </select>
+        <button class="rounded-lg p-2 bg-blue-500 text-white" on:click={() => loadAvailableModels()}>
+          Update Models
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="flex flex-col gap-2 grow">
-    <label for="projectDescription" class="">{selectedDiagram.instruction} <button class="text-slate-200 underline" on:click={() => { projectDescription = selectedDiagram.example; hasCustomizedProjectDescription = false; }}>(Show an Example)</button></label>
-    <textarea id="projectDescription" class="flex-1 rounded-lg p-2" bind:value={projectDescription} placeholder="A description of the project" on:input={() => hasCustomizedProjectDescription = true} />
-  </div>
-  <div class="flex flex-col items-stretch gap-2">
-    {#if isGeneratingDiagram}
-      <span class="self-center">
-        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path>
-        </svg>
-      </span>
-    {:else}
-      <button class="grow-0 rounded-lg p-2 bg-blue-500 text-white" on:click={() => generateDiagram()}>
-          Generate Diagram <span class="italic">Using GPT3</span>
-      </button>
-    {/if}
-    <p class="text-sm italic">Sometimes Graph Code with an invalid syntax may be generated. If that happens you can try generating again or manually correct the mistake in the graph code.</p>
+    <div class="flex flex-col gap-2 grow">
+      <label for="diagramPrompt" class="">Diagram Type:</label>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        {#each diagramPrompts as prompt}
+          <label class="flex flex-row items-center gap-2">
+            <input type="radio" name="diagramPrompt" value={prompt} bind:group={selectedDiagram} on:change={updateProjectDescription} />
+            <span class="flex flex-row items-center align-middle text-xl gap-2">
+              {prompt.diagramType}
+              <a class="text-slate-200 underline text-sm" href="{ prompt.promptSourceUrl }" target="_blank" title="View Prompt Source Code">(?)</a>
+            </span>
+          </label>
+        {/each}
+      </div>
+    </div>
+    <div class="flex flex-col gap-2 grow">
+      <label for="projectDescription" class="">{selectedDiagram.instruction} <button class="text-slate-200 underline" on:click={() => { projectDescription = selectedDiagram.example; hasCustomizedProjectDescription = false; }}>(Show an Example)</button></label>
+      <textarea id="projectDescription" class="flex-1 rounded-lg p-2" bind:value={projectDescription} placeholder="A description of the project" on:input={() => hasCustomizedProjectDescription = true} />
+    </div>
+    <div class="flex flex-col items-stretch gap-2">
+      {#if isGeneratingDiagram}
+        <span class="self-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path>
+          </svg>
+        </span>
+      {:else}
+        <button class="grow-0 rounded-lg p-2 bg-blue-500 text-white" on:click={() => generateDiagram()}>
+            Generate Diagram <span class="italic">Using GPT3</span>
+        </button>
+      {/if}
+      <p class="text-sm italic">Sometimes Graph Code with an invalid syntax may be generated. If that happens you can try generating again or manually correct the mistake in the graph code.</p>
+    </div>
   </div>
 </div>

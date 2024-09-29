@@ -62,10 +62,10 @@ erDiagram
 Each relationship statement in the ERD diagram code consists of the following parts: <first-entity> <cardinality arrow> <second-entity> [: "relationship-label"]
 
 Use only these cardinality symbols for the cardinality arrow:
-  |o o| Zero or one
-  || || Exactly one
-  }o o{ Zero or more (no upper limit)
-  }| |{ One or more (no upper limit)
+  |o--o| Zero or one
+  ||--|| Exactly one
+  }o--o{ Zero or more (no upper limit)
+  }|--|{ One or more (no upper limit)
 
 You will be given a system description and you must generate ER diagram code for it in the same format. Adhere to the same format seen in the provided examples.
 Return the ER diagram code for this system description, give NO explanation or introduction.

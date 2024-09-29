@@ -129,7 +129,7 @@
 	});
 </script>
 
-<div class="flex flex-col md:flex-row md:grow">
+<div class="api-key-required flex flex-col md:flex-row md:grow">
 	<div class="flex flex-col flex-1 bg-slate-200 p-4 gap-2">
 		{#if graph == null}
 			<p>Loading...</p>

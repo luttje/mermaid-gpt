@@ -10,10 +10,15 @@ export class DiagramPrompt {
     private prompt: string
   ) { }
   
-  async generateDiagram(apiKey: string, diagramDescription: string) {
+  async generateDiagram(apiKey: string, model: string, diagramDescription: string) {
     const promptBody = {
-      model: 'text-davinci-003',
-      prompt: this.prompt + diagramDescription + '"""\nERDiagram code: ',
+      model: model,
+      messages: [
+        {
+          role: 'system',
+          content: this.prompt + diagramDescription + '"""\nERDiagram code: '
+        }
+      ],
       max_tokens: 2000,
       top_p: 0.1,
     };
@@ -22,7 +27,7 @@ export class DiagramPrompt {
       promptBody
     });
 
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,9 +36,8 @@ export class DiagramPrompt {
       body: JSON.stringify(promptBody)
     });
 
-    console.log(response);
     const data = await response.json();
-    const diagram = data.choices[0].text.trim('\n');
+    const diagram = data.choices[0].message.content.trim('\n');
 
     return diagram;
   }
