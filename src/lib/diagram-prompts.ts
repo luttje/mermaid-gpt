@@ -16,7 +16,7 @@ export class DiagramPrompt {
       messages: [
         {
           role: 'system',
-          content: this.prompt + diagramDescription + '"""\nERDiagram code: '
+          content: this.prompt + diagramDescription + '"""\nMermaidDiagram code: '
         }
       ],
       max_tokens: 2000,

@@ -95,7 +95,12 @@
       }
     };
 
-		mermaid.initialize({});
+		mermaid.initialize({
+      startOnLoad: false,
+      flowchart: {
+        htmlLabels: false,
+      },
+    });
 		await refreshGraph();
     
     if (!divEl)

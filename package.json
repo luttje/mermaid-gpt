@@ -40,8 +40,8 @@
 	},
 	"dependencies": {
 		"html-to-image": "^1.11.11",
-		"mermaid": "^10.1.0",
-		"monaco-editor": "^0.37.1",
-		"monaco-mermaid": "^1.0.8"
+		"mermaid": "^11.2.1",
+		"monaco-editor": "^0.52.0",
+		"monaco-mermaid": "^1.1.0"
 	}
 }

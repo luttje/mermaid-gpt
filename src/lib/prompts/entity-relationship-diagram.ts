@@ -1,10 +1,10 @@
 /**
  * text-davinci-003 prompt for generating Entityn Relationship Diagram code
  */
-export const prompt = `You will generate ERDiagram code for a system description. It should be formatted like these examples:
+export const prompt = `You will generate MermaidDiagram ERD code for a system description. It should be formatted like these examples:
 
 System description: A property contains one or more rooms and a room is always contained in a property. Both a property and a room can have a name.
-ERDiagram code:
+MermaidDiagram code:
 erDiagram
   PROPERTY ||--|{ ROOM : "contains"
   PROPERTY {
@@ -18,7 +18,7 @@ erDiagram
   }
 ##
 System description: There are two entities: cars and persons. Cars have a registration number, model and make. Persons have attributes sensible to humans. A person can be the driver of many cars and a car can have no or many drivers. When a person is registered to a car, they are called a named driver. A named driver always belongs to a car and a person. 
-ERDiagram code:
+MermaidDiagram code:
 erDiagram
   CAR ||--o{ NAMED-DRIVER : "allows"
   CAR {
@@ -39,7 +39,7 @@ erDiagram
   }
 ##
 System description: A customer can place orders for their sector and have it delivered to an address. A customer has a name and is identified by a unique number. A customer can be associated with many orders, and an order can be associated with only one customer. An order must contain one or more items unique to that order. The items in the order also contain information on the product price and quantity.
-ERDiagram code:
+MermaidDiagram code:
 erDiagram
   CUSTOMER ||--o{ ORDER : "places"
   CUSTOMER {

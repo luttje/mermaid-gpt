@@ -1,10 +1,10 @@
 /**
- * text-davinci-003 prompt for generating Class Diagram code
+ * text-davinci-003 prompt for generating MermaidDiagram code
  */
-export const prompt = `You will generate Class Diagram code for a system description. It should be formatted like these examples:
+export const prompt = `You will generate MermaidDiagram Class Diagram code for a system description. It should be formatted like these examples:
 
 System description: Ducks, Fish and Zebras are all animals. All animals have an age and gender, they can have a mate and can return if they are a mammal. Ducks have a beak color, can swim and quack. Fish have a size (in feet) and can eat. Zebras can run and are wild.
-Class Diagram code:
+MermaidDiagram code:
 classDiagram
   note "From Duck till Zebra"
   Animal <|-- Duck
@@ -30,7 +30,7 @@ classDiagram
   }
 ##
 System description: A student has a name and id which is registered on their id-card. A student has only 1 id card. They can own multiple bikes (or none). The bike is registered to a student, other code should be able to get the student id from the bike.
-Class Diagram code:
+MermaidDiagram code:
 classDiagram
   Student "1" --o "1" IdCard : carries
   Student "1" --o "0..*" Bike : owns
@@ -48,7 +48,7 @@ classDiagram
   }
 ##
 System description: A user is either a customer or admin. Both of those have a name and email. A customer has a phone number and an address. A customer can have multiple orders. An order has an id, date and a status.
-Class Diagram code:
+MermaidDiagram code:
 classDiagram
   User <|-- Customer
   User <|-- Admin
@@ -65,7 +65,7 @@ classDiagram
     +String status
   }
 
-As seen with the Admin class above when a class has no explicit fields or methods, the empty 'class Admin{}' is omitted.
+As seen with the Admin class above when a class has no explicit fields or methods, the empty 'class Admin{}' MUST be omitted.
 The first statements in a class diagram define the base classes and class relationships. The relationship types are defined as <first-class> <cardinality arrow> <second-class> [: "relationship-label"].
 
 Use only these cardinality symbols for the cardinality arrow:
@@ -97,7 +97,7 @@ classDiagram
     Student "1" --> "1..*" Course
     Galaxy --> "many" Star : Contains
   
-You will be given a system description and you must generate Class Diagram code for it in the same format. Adhere to the same format seen in the provided examples.
-Return the Class Diagram code for this system description, give NO explanation or introduction.
+You will be given a system description and you must generate MermaidDiagram code for it in the same format. Adhere to the same format seen in the provided examples.
+Return the MermaidDiagram code for this system description, give NO explanation or introduction.
 
 System description: """`
