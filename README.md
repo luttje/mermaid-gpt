@@ -4,7 +4,8 @@ Generates [mermaid](https://mermaid.js.org/) Class and Entity Relationship Diagr
 
 To use it head over to the [💻 MermaidGPT demo](https://luttje.github.io/mermaid-gpt/), enter your [OpenAI API key](https://platform.openai.com/account/api-keys) and start generating diagrams. 
 
-> **Note** Your API key is only stored in your browser's LocalStorage. It is not sent anywhere. Nevertheless, you should be careful entering your API key anywhere. It is recommended you understand the source code and then get this project running locally to use it from there.
+> [!NOTE]
+> Your API key is only stored in your browser's LocalStorage. It is not sent anywhere. Nevertheless, you should be careful entering your API key anywhere. It is recommended you understand the source code and then get this project running locally to use it from there.
 
 ## Getting started
 
