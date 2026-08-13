@@ -1,8 +1,8 @@
-# 🧜‍♀️ MermaidGPT 
+# 🧜‍♀️ MermaidGPT
 
 Generates [mermaid](https://mermaid.js.org/) Class and Entity Relationship Diagrams based on your description, using GPT-3 (`text-davinci-003`).
 
-To use it head over to the [💻 MermaidGPT demo](https://luttje.github.io/mermaid-gpt/), enter your [OpenAI API key](https://platform.openai.com/account/api-keys) and start generating diagrams. 
+To use it head over to the [💻 MermaidGPT demo](https://luttje.github.io/mermaid-gpt/), enter your [OpenAI API key](https://platform.openai.com/account/api-keys) and start generating diagrams.
 
 > [!NOTE]
 > Your API key is only stored in your browser's LocalStorage. It is not sent anywhere. Nevertheless, you should be careful entering your API key anywhere. It is recommended you understand the source code and then get this project running locally to use it from there.
