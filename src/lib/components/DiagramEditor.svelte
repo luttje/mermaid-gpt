@@ -36,12 +36,18 @@
 		overviewRulerLanes: 0
 	};
 
+	// Mermaid 12 renders ER diagrams with the generic renderer and 16px labels. The
+	// old ER renderer used 12px text, so keep that size for ER diagrams only.
+	const erDiagramDirective = '%%{init: {"themeVariables": {"fontSize": "12px"}}}%%';
+
 	async function refreshGraph() {
 		if (graph == null) return;
 
+		const isErDiagram = /^\s*erDiagram\b/m.test(diagramCode);
+
 		// mermaid renders into this element itself, so it is not managed by Svelte
 		// eslint-disable-next-line svelte/no-dom-manipulating
-		graph.textContent = diagramCode;
+		graph.textContent = isErDiagram ? `${erDiagramDirective}\n${diagramCode}` : diagramCode;
 		graph.removeAttribute('data-processed');
 
 		await mermaid.run({
@@ -93,9 +99,22 @@
 			}
 		};
 
+		// Mermaid 12 gives each diagram type its own 'redux-color' theme and 'neo'
+		// look by default, and lays out with ELK. Keep the classic Mermaid 11 style.
+		const classicStyle = { theme: 'default', look: 'classic' } as const;
+		const perDiagramStyle = Object.fromEntries(
+			Object.entries(mermaid.mermaidAPI.defaultConfig)
+				.filter(([, value]) => typeof value === 'object' && value !== null && 'look' in value)
+				.map(([diagram]) => [diagram, classicStyle])
+		);
+
 		mermaid.initialize({
 			startOnLoad: false,
+			...classicStyle,
+			layout: 'dagre',
+			...perDiagramStyle,
 			flowchart: {
+				...classicStyle,
 				htmlLabels: false
 			}
 		});
