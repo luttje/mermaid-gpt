@@ -1,45 +1,44 @@
 <script lang="ts">
 	import { type DiagramPrompt, diagramPrompts } from '#lib/diagram-prompts.ts';
+	import { getErrorMessage, openAiRequest } from '#lib/openai.ts';
 	import { diagram } from '#lib/stores/diagram-store.ts';
 	import { onMount } from 'svelte';
 
 	let apiKeyElType: string = 'password';
-	let apiKey: string | undefined = undefined;
+	let apiKey: string = '';
 	let model: string = '';
 	let hasCustomizedProjectDescription: boolean = false;
 	let selectedDiagram: DiagramPrompt = diagramPrompts[0];
 	let projectDescription: string = selectedDiagram.example;
 	let isGeneratingDiagram = false;
+	let isLoadingModels = false;
 	let availableModels: string[] = [];
+	let errorMessage = '';
 
 	const preferredModels = ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'];
 
-	function loadAvailableModels() {
-		fetch('https://api.openai.com/v1/models', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${apiKey}`
+	async function loadAvailableModels() {
+		if (!checkApiKey()) return;
+
+		errorMessage = '';
+		isLoadingModels = true;
+
+		try {
+			const data = await openAiRequest<{ data?: { id: string }[] }>(apiKey, 'models');
+
+			availableModels = (data.data ?? []).map((model) => model.id).sort();
+
+			if (!availableModels.includes(model)) {
+				model =
+					preferredModels.find((m) => availableModels.includes(m)) ?? availableModels[0] ?? '';
 			}
-		})
-			.then((response) => response.json())
-			.then((data) => {
-				const models = data.data;
-				const modelIds = [];
-
-				for (const model of models) {
-					modelIds.push(model.id);
-				}
-
-				availableModels = modelIds.sort();
-
-				for (const preferredModel of preferredModels) {
-					if (availableModels.includes(preferredModel)) {
-						model = preferredModel;
-						break;
-					}
-				}
-			});
+		} catch (error) {
+			availableModels = [];
+			model = '';
+			errorMessage = getErrorMessage(error);
+		} finally {
+			isLoadingModels = false;
+		}
 	}
 
 	function setEnabledApiKeyElements(enabled: boolean) {
@@ -53,9 +52,9 @@
 		});
 	}
 
-	function checkApiKey(apiKey: string | undefined): apiKey is string {
-		if (!apiKey || apiKey.length === 0) {
-			alert('Please enter an API key');
+	function checkApiKey() {
+		if (apiKey.length === 0) {
+			errorMessage = 'Please enter your OpenAI API key.';
 			setEnabledApiKeyElements(false);
 			return false;
 		}
@@ -64,50 +63,56 @@
 		return true;
 	}
 
+	// Enable the rest of the form as soon as a key has been entered
 	function updateApiKey(event: Event) {
-		const input = event.target as HTMLInputElement;
-		apiKey = input.value;
+		apiKey = (event.target as HTMLInputElement).value.trim();
+		errorMessage = '';
+		setEnabledApiKeyElements(apiKey.length > 0);
 	}
 
-	// Save the API key to local storage
-	function saveApiKey() {
-		if (!checkApiKey(apiKey)) return false;
+	// When the key is committed (blur or enter), remember it and check it by loading the models
+	function commitApiKey() {
+		if (apiKey.length === 0) {
+			localStorage.removeItem('apiKey');
+			availableModels = [];
+			return;
+		}
 
 		localStorage.setItem('apiKey', apiKey);
-		return true;
+		loadAvailableModels();
 	}
 
 	async function generateDiagram() {
-		if (!checkApiKey(apiKey)) return false;
+		if (!checkApiKey()) return;
 
-		saveApiKey();
-
-		if (!projectDescription || projectDescription.length === 0) {
-			alert('Please enter a project description');
-			return false;
+		if (projectDescription.trim().length === 0) {
+			errorMessage = 'Please enter a project description.';
+			return;
 		}
 
+		if (!model) {
+			errorMessage = 'Please select a model. Click "Update Models" to load the available models.';
+			return;
+		}
+
+		errorMessage = '';
 		isGeneratingDiagram = true;
 
-		const generatedDiagram = await selectedDiagram.generateDiagram(
-			apiKey,
-			model,
-			projectDescription
-		);
-		diagram.set(generatedDiagram);
-
-		isGeneratingDiagram = false;
+		try {
+			diagram.set(await selectedDiagram.generateDiagram(apiKey, model, projectDescription));
+		} catch (error) {
+			errorMessage = getErrorMessage(error);
+		} finally {
+			isGeneratingDiagram = false;
+		}
 	}
 
 	onMount(() => {
-		apiKey = localStorage.getItem('apiKey') || '';
+		apiKey = localStorage.getItem('apiKey') ?? '';
 
-		setEnabledApiKeyElements(false);
+		setEnabledApiKeyElements(apiKey !== '');
 
-		if (apiKey !== '') {
-			setEnabledApiKeyElements(true);
-			loadAvailableModels();
-		}
+		if (apiKey !== '') loadAvailableModels();
 	});
 
 	function updateProjectDescription() {
@@ -128,6 +133,7 @@
 				class="grow rounded-lg p-2"
 				placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 				on:input={(e) => updateApiKey(e)}
+				on:change={commitApiKey}
 			/>
 			<button
 				aria-label="Toggle API key visibility"
@@ -147,6 +153,11 @@
 				</svg>
 			</button>
 		</div>
+		{#if errorMessage}
+			<p role="alert" class="rounded-lg p-2 bg-red-100 text-red-800 border border-red-300">
+				{errorMessage}
+			</p>
+		{/if}
 	</div>
 	<div class="flex flex-col gap-2 api-key-required">
 		<div class="flex flex-col gap-2">
@@ -159,9 +170,10 @@
 				</select>
 				<button
 					class="rounded-lg p-2 bg-blue-500 text-white"
+					disabled={isLoadingModels}
 					on:click={() => loadAvailableModels()}
 				>
-					Update Models
+					{isLoadingModels ? 'Loading...' : 'Update Models'}
 				</button>
 			</div>
 		</div>
