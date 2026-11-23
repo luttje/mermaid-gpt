@@ -100,4 +100,4 @@ classDiagram
 You will be given a system description and you must generate MermaidDiagram code for it in the same format. Adhere to the same format seen in the provided examples.
 Return the MermaidDiagram code for this system description, give NO explanation or introduction.
 
-System description: """`
+System description: """`;
