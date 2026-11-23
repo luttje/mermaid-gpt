@@ -6,7 +6,6 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"deploy": "vite build && touch build/.nojekyll && gh-pages -d build -t",
 		"preview": "vite preview",
 		"test": "playwright test",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -27,7 +26,6 @@
 		"eslint": "^10.15.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.24.1",
-		"gh-pages": "^6.3.0",
 		"globals": "^17.14.0",
 		"prettier": "^3.10.1",
 		"prettier-plugin-svelte": "^4.2.0",
