@@ -6,7 +6,7 @@
 	<slot />
 </div>
 
-<div class="fixed bottom-0 left-0 p-2 bg-white border-tr rounded-sm shadow-md">
+<div class="fixed bottom-0 left-0 p-2 bg-white border-tr rounded-xs shadow-md">
 	<a
 		href="https://github.com/luttje/mermaid-gpt"
 		target="_blank"

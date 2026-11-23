@@ -1,13 +1,20 @@
+/// <reference types="node" />
+import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
-import postcss from './postcss.config.js';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [
+		tailwindcss(),
+		sveltekit({
+			adapter: adapter(),
+			paths: {
+				base: process.env.NODE_ENV === 'production' ? '/mermaid-gpt' : ''
+			}
+		})
+	],
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']
-	},
-  css:{
-    postcss
-  }
+	}
 });

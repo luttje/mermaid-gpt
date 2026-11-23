@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { type DiagramPrompt, diagramPrompts } from '$lib/diagram-prompts';
-	import { diagram } from '$lib/stores/diagram-store';
+	import { type DiagramPrompt, diagramPrompts } from '#lib/diagram-prompts.ts';
+	import { diagram } from '#lib/stores/diagram-store.ts';
 	import { onMount } from 'svelte';
 
 	let apiKeyElType: string = 'password';
@@ -117,7 +117,7 @@
 	}
 </script>
 
-<div class="flex flex-col grow-0 bg-slate-400 shadow p-4 gap-4">
+<div class="flex flex-col grow-0 bg-slate-400 shadow-sm p-4 gap-4">
 	<div class="flex flex-col gap-2 grow">
 		<label for="apiKey" class="">OpenAI API Key:</label>
 		<div class="flex flex-row gap-2">
@@ -130,6 +130,7 @@
 				on:input={(e) => updateApiKey(e)}
 			/>
 			<button
+				aria-label="Toggle API key visibility"
 				class="flex flex-col justify-center items-center bg-slate-200 rounded-lg p-2"
 				on:click={() => (apiKeyElType = apiKeyElType === 'password' ? 'text' : 'password')}
 			>
@@ -151,8 +152,8 @@
 		<div class="flex flex-col gap-2">
 			<label for="model" class="">Model:</label>
 			<div class="flex flex-row gap-2">
-				<select id="model" class="rounded-lg p-2 flex-grow" bind:value={model}>
-					{#each availableModels as model}
+				<select id="model" class="rounded-lg p-2 grow" bind:value={model}>
+					{#each availableModels as model (model)}
 						<option value={model}>{model}</option>
 					{/each}
 				</select>
@@ -167,7 +168,7 @@
 		<div class="flex flex-col gap-2 grow">
 			<label for="diagramPrompt" class="">Diagram Type:</label>
 			<div class="flex flex-col sm:flex-row sm:items-center gap-4">
-				{#each diagramPrompts as prompt}
+				{#each diagramPrompts as prompt (prompt.diagramType)}
 					<label class="flex flex-row items-center gap-2">
 						<input
 							type="radio"
@@ -178,6 +179,7 @@
 						/>
 						<span class="flex flex-row items-center align-middle text-xl gap-2">
 							{prompt.diagramType}
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- external link -->
 							<a
 								class="text-slate-200 underline text-sm"
 								href={prompt.promptSourceUrl}
@@ -186,6 +188,7 @@
 							>
 								(?)
 							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
 						</span>
 					</label>
 				{/each}
@@ -209,8 +212,7 @@
 				class="flex-1 rounded-lg p-2"
 				bind:value={projectDescription}
 				placeholder="A description of the project"
-				on:input={() => (hasCustomizedProjectDescription = true)}
-			/>
+				on:input={() => (hasCustomizedProjectDescription = true)}></textarea>
 		</div>
 		<div class="flex flex-col items-stretch gap-2">
 			{#if isGeneratingDiagram}

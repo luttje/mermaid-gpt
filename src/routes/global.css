@@ -1,3 +1,29 @@
-@tailwind utilities;
-@tailwind components;
-@tailwind base;
+@import 'tailwindcss';
+
+/*
+  Tailwind CSS v4 compatibility: keep the v3 defaults this app relied on.
+*/
+@layer base {
+	button:not(:disabled),
+	[role='button']:not(:disabled) {
+		cursor: pointer;
+	}
+
+	/* v4 preflight makes form fields transparent, v3 kept the browser default background */
+	input:where(:not([type='button'], [type='reset'], [type='submit'])),
+	select,
+	textarea {
+		background-color: revert;
+	}
+
+	/* v4 preflight resets the margin and padding of every element, v3 kept the browser defaults for dialogs */
+	dialog {
+		margin: revert;
+		padding: revert;
+	}
+
+	input::placeholder,
+	textarea::placeholder {
+		color: var(--color-gray-400);
+	}
+}

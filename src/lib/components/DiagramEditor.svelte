@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import * as monaco from 'monaco-editor';
-	import monacoJsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
-	import monacoEditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+	import monacoJsonWorker from 'monaco-editor/language/json/json.worker?worker';
+	import monacoEditorWorker from 'monaco-editor/editor/editor.worker?worker';
 	import { toPng, toJpeg, toSvg } from 'html-to-image';
-	import { diagram } from '$lib/stores/diagram-store';
-	// @ts-ignore ignore missing type definitions for monaco-mermaid
+	import { diagram } from '#lib/stores/diagram-store.ts';
 	import initEditor from 'monaco-mermaid';
 	import mermaid from 'mermaid';
 
@@ -40,6 +39,8 @@
 	async function refreshGraph() {
 		if (graph == null) return;
 
+		// mermaid renders into this element itself, so it is not managed by Svelte
+		// eslint-disable-next-line svelte/no-dom-manipulating
 		graph.textContent = diagramCode;
 		graph.removeAttribute('data-processed');
 
@@ -105,7 +106,7 @@
 		initEditor(monaco);
 		editor = monaco.editor.create(divEl, editorOptions);
 
-		editor.onDidChangeModelContent(({ isFlush, changes }) => {
+		editor.onDidChangeModelContent(({ isFlush }) => {
 			const newText = editor?.getValue();
 
 			if (!newText || diagramCode === newText || isFlush) return;
@@ -135,26 +136,27 @@
 			<p>Loading...</p>
 		{:else}
 			<label for="graphCode" class="text-xl">Graph Code</label>
-			<div bind:this={divEl} id="editor" class="h-full w-full min-h-[250px]" />
+			<div bind:this={divEl} id="editor" class="h-full w-full min-h-[250px]"></div>
 		{/if}
 	</div>
 	<div class="flex flex-col flex-1 p-4 gap-2">
 		<div class="flex-1 grow">
 			<label for="graph" class="text-xl">Resulting Graph</label>
-			<pre bind:this={graph} id="graph" class="mermaid" />
+			<pre bind:this={graph} id="graph" class="mermaid"></pre>
 		</div>
 		<div class="text-right bg-white shrink-0">
 			<div class="relative inline-flex text-left">
 				<button
 					type="button"
-					class="flex items-center justify-center px-4 py-2 font-medium text-white !bg-blue-500 border border-transparent rounded-l-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-					on:click={(event) => saveGraph('svg')}
+					class="flex items-center justify-center px-4 py-2 font-medium text-white !bg-blue-500 border border-transparent rounded-l-md shadow-xs hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+					on:click={() => saveGraph('svg')}
 				>
 					Save as SVG
 				</button>
 				<button
 					type="button"
-					class="peer ml-[1px] relative inline-flex items-center justify-center px-2 py-2 text-white !bg-blue-500 border border-transparent rounded-r-md shadow-sm hover:text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+					aria-label="More download formats"
+					class="peer ml-px relative inline-flex items-center justify-center px-2 py-2 text-white !bg-blue-500 border border-transparent rounded-r-md shadow-xs hover:text-white hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
 				>
 					<svg
 						class="w-4 h-4"
@@ -180,14 +182,14 @@
 						aria-labelledby="options-menu"
 					>
 						<button
-							on:click={(event) => saveGraph('png')}
+							on:click={() => saveGraph('png')}
 							class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
 							role="menuitem"
 						>
 							As PNG
 						</button>
 						<button
-							on:click={(event) => saveGraph('jpeg')}
+							on:click={() => saveGraph('jpeg')}
 							class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
 							role="menuitem"
 						>
@@ -204,15 +206,17 @@
 			<h2>Download Diagram</h2>
 			<p>Your diagram has been generated. Click the button below to download it.</p>
 			<div class="flex flex-row justify-between">
+				<!-- svelte-ignore a11y_invalid_attribute -->
 				<a
-					href={'#'}
+					href="#"
 					class="rounded-lg p-2 bg-gray-300 cursor-pointer"
 					on:click={() => downloadDialogEl?.close()}
 				>
 					Cancel
 				</a>
+				<!-- svelte-ignore a11y_invalid_attribute -->
 				<a
-					href={'#'}
+					href="#"
 					class="rounded-lg p-2 bg-blue-500 text-white cursor-pointer"
 					bind:this={downloadEl}
 					on:click={() => downloadDialogEl?.close()}
